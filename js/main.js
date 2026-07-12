@@ -77,14 +77,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Envio de formulários pro backend (send-form.php)
+  const submitForm = async (form, { successMessage, submitBtn }) => {
+    const originalLabel = submitBtn ? submitBtn.textContent : null;
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Enviando...';
+    }
+    try {
+      const res = await fetch('send-form.php', { method: 'POST', body: new FormData(form) });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Falha ao enviar');
+      alert(successMessage);
+      form.reset();
+      return true;
+    } catch (err) {
+      alert('Não foi possível enviar agora. Tente novamente em instantes ou fale pelo WhatsApp.');
+      return false;
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalLabel;
+      }
+    }
+  };
+
   // Formulário de contato
   const form = document.getElementById('contactForm');
   if (form) {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      // TODO: conectar a um endpoint real (ex: FormSubmit, backend próprio, WhatsApp API)
-      alert('Mensagem enviada com sucesso! Em breve entraremos em contato.');
-      form.reset();
+      submitForm(form, {
+        successMessage: 'Mensagem enviada com sucesso! Em breve entraremos em contato.',
+        submitBtn: form.querySelector('button[type="submit"]'),
+      });
     });
   }
 
@@ -102,10 +128,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (quoteForm) {
     quoteForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      // TODO: conectar a um endpoint real (ex: backend próprio, e-mail transacional, CRM)
-      alert('Orçamento solicitado com sucesso! Nossa equipe vai analisar os detalhes e entrar em contato.');
-      quoteForm.reset();
-      if (quotePlantaName) quotePlantaName.textContent = 'Nenhum arquivo selecionado';
+      submitForm(quoteForm, {
+        successMessage: 'Orçamento solicitado com sucesso! Nossa equipe vai analisar os detalhes e entrar em contato.',
+        submitBtn: quoteForm.querySelector('button[type="submit"]'),
+      }).then((sent) => {
+        if (sent && quotePlantaName) quotePlantaName.textContent = 'Nenhum arquivo selecionado';
+      });
     });
   }
 
@@ -147,9 +175,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (newsletterForm) {
     newsletterForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      // TODO: conectar a um endpoint real (ex: Mailchimp, RD Station, backend próprio)
-      alert('Inscrição confirmada! Fique de olho no seu e-mail para o cupom de 15%.');
-      newsletterForm.reset();
+      submitForm(newsletterForm, {
+        successMessage: 'Inscrição confirmada! Fique de olho no seu e-mail para o cupom de 15%.',
+        submitBtn: newsletterForm.querySelector('button'),
+      });
     });
   }
 });

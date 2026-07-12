@@ -232,6 +232,7 @@
         <p>Conte os detalhes do seu projeto — quanto mais informação, mais preciso é o seu orçamento.</p>
       </div>
       <form class="quote-form reveal" id="quoteForm">
+        <input type="hidden" name="form_type" value="orcamento">
         <div class="quote-grid">
           <div class="field"><input type="text" name="nome" placeholder="Nome" required></div>
           <div class="field"><input type="tel" name="telefone" placeholder="Telefone / WhatsApp" required></div>
@@ -308,6 +309,7 @@
         <span class="eyebrow on-dark">07 — Contato</span>
         <h2 style="margin:0.75rem 0 2.5rem;font-size:clamp(2rem,3.5vw,2.75rem);">Tire suas dúvidas</h2>
         <form class="contact-form" id="contactForm">
+          <input type="hidden" name="form_type" value="contato">
           <div class="row">
             <div class="field"><input type="text" name="nome" placeholder="Nome" required></div>
             <div class="field"><input type="tel" name="telefone" placeholder="Telefone / WhatsApp" required></div>
@@ -370,6 +372,7 @@
         <h5>Newsletter</h5>
         <p style="color:var(--c-400);font-size:0.85rem;margin-bottom:1rem;">Cadastre-se e receba 15% de desconto exclusivo para assinantes.</p>
         <form class="newsletter-form" id="newsletterForm">
+          <input type="hidden" name="form_type" value="newsletter">
           <input type="email" name="email" placeholder="Seu e-mail" required>
           <button type="submit" aria-label="Assinar">→</button>
         </form>
@@ -409,6 +412,6 @@
   </button>
 </div>
 
-<script src="js/main.js?v=2"></script>
+<script src="js/main.js?v=3"></script>
 </body>
 </html>
