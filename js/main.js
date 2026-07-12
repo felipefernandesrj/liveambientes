@@ -87,6 +87,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Toasts de notificação (glassmorphism, identidade do site)
+  const toastContainer = document.createElement('div');
+  toastContainer.className = 'toast-container';
+  document.body.appendChild(toastContainer);
+
+  const toastIcons = {
+    success: '<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>',
+    error: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>',
+  };
+
+  const showToast = (message, { type = 'success', title, duration = 5000 } = {}) => {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+      <span class="toast-icon">${toastIcons[type] || toastIcons.success}</span>
+      <span class="toast-body">
+        <span class="toast-title">${title || (type === 'error' ? 'Não foi possível enviar' : 'Enviado com sucesso')}</span>
+        <span class="toast-message">${message}</span>
+      </span>
+      <button class="toast-close" type="button" aria-label="Fechar">&times;</button>
+      <span class="toast-countdown" style="animation-duration:${duration}ms"></span>
+    `;
+    toastContainer.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
+
+    let dismissed = false;
+    const dismiss = () => {
+      if (dismissed) return;
+      dismissed = true;
+      clearTimeout(timeoutId);
+      toast.classList.remove('show');
+      toast.classList.add('hide');
+      setTimeout(() => toast.remove(), 350);
+    };
+    const timeoutId = setTimeout(dismiss, duration);
+    toast.querySelector('.toast-close').addEventListener('click', dismiss);
+  };
+
   // Envio de formulários pro backend (send-form.php)
   const submitForm = async (form, { successMessage, submitBtn }) => {
     const originalLabel = submitBtn ? submitBtn.textContent : null;
@@ -98,11 +136,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch('send-form.php', { method: 'POST', body: new FormData(form) });
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.error || 'Falha ao enviar');
-      alert(successMessage);
+      showToast(successMessage, { type: 'success' });
       form.reset();
       return true;
     } catch (err) {
-      alert('Não foi possível enviar agora. Tente novamente em instantes ou fale pelo WhatsApp.');
+      showToast('Tente novamente em instantes ou fale pelo WhatsApp.', { type: 'error' });
       return false;
     } finally {
       if (submitBtn) {
