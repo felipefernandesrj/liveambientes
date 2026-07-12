@@ -14,10 +14,18 @@ document.addEventListener('DOMContentLoaded', () => {
   // Menu mobile
   const navToggle = document.getElementById('navToggle');
   const navLinks = document.getElementById('navLinks');
-  if (navToggle && navLinks) {
-    navToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
+  if (navToggle && navLinks && header) {
+    const toggleMenu = () => {
+      navLinks.classList.toggle('open');
+      header.classList.toggle('menu-open');
+    };
+    const closeMenu = () => {
+      navLinks.classList.remove('open');
+      header.classList.remove('menu-open');
+    };
+    navToggle.addEventListener('click', toggleMenu);
     navLinks.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => navLinks.classList.remove('open'));
+      link.addEventListener('click', closeMenu);
     });
   }
 
