@@ -3,3 +3,4 @@ deployment:
   tasks:
     - export DEPLOYPATH=/home/deparam1/public_html/liveambientes.com.br/
     - /bin/cp -R * $DEPLOYPATH
+    - /bin/cp -R .htaccess $DEPLOYPATH
