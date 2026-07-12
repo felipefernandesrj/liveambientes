@@ -59,7 +59,7 @@ switch ($formType) {
             echo json_encode(['ok' => false, 'error' => 'Campos obrigatórios faltando']);
             exit;
         }
-        $to = $allEmails;
+        $to = $lojaEmails['Recreio'];
         $subject = 'Nova mensagem de contato pelo site';
         $body = "Nome: $nome\n";
         $body .= "Telefone/WhatsApp: $telefone\n";
@@ -73,7 +73,7 @@ switch ($formType) {
             echo json_encode(['ok' => false, 'error' => 'E-mail obrigatório']);
             exit;
         }
-        $to = $allEmails;
+        $to = $lojaEmails['Recreio'];
         $subject = 'Nova inscrição na newsletter pelo site';
         $body = "E-mail inscrito: $email\n";
         break;
