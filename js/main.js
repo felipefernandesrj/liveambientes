@@ -18,10 +18,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleMenu = () => {
       navLinks.classList.toggle('open');
       header.classList.toggle('menu-open');
+      navToggle.classList.toggle('open');
     };
     const closeMenu = () => {
       navLinks.classList.remove('open');
       header.classList.remove('menu-open');
+      navToggle.classList.remove('open');
     };
     navToggle.addEventListener('click', toggleMenu);
     navLinks.querySelectorAll('a').forEach(link => {
