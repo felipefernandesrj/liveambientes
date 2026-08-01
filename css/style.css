@@ -596,6 +596,85 @@ h1, h2, h3, h4 {
 }
 .projeto-gallery-legend .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c-900); }
 
+/* ---------- Projeto: etapas alternadas imagem + texto ---------- */
+.projeto-step {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(2rem, 4vw, 4rem);
+  align-items: center;
+  margin-bottom: clamp(3.5rem, 6vw, 5.5rem);
+}
+.projeto-step:last-child { margin-bottom: 0; }
+.projeto-step-reverse .projeto-step-media { order: 2; }
+.projeto-step-reverse .projeto-step-text { order: 1; }
+.projeto-step-media {
+  position: relative;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--c-200);
+}
+.projeto-step-media img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1.1s ease-in-out;
+}
+.projeto-step-media img.active { opacity: 1; }
+.projeto-step-text .eyebrow { margin-bottom: 1rem; }
+.projeto-step-text h3 {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
+  text-transform: uppercase;
+  margin-bottom: 1.15rem;
+}
+.projeto-step-text p { color: var(--c-600); font-size: 0.96rem; line-height: 1.7; max-width: 50ch; }
+@media (max-width: 900px) {
+  .projeto-step { grid-template-columns: 1fr; }
+  .projeto-step-reverse .projeto-step-media,
+  .projeto-step-reverse .projeto-step-text { order: initial; }
+}
+
+/* ---------- Projeto: toggle dia/noite ---------- */
+.projeto-daynight-media {
+  position: relative;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--c-200);
+  margin-bottom: 1.75rem;
+}
+.projeto-daynight-media img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+}
+.projeto-daynight-media img.active { opacity: 1; }
+.daynight-toggle {
+  display: inline-flex;
+  border: 1px solid var(--c-200);
+  border-radius: 999px;
+  padding: 0.3rem;
+  gap: 0.25rem;
+}
+.daynight-toggle button {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  border: none; background: none;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--c-600);
+  cursor: pointer;
+  transition: background 0.3s var(--ease), color 0.3s var(--ease);
+}
+.daynight-toggle button.active { background: var(--c-900); color: var(--c-0); }
+.daynight-toggle svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+
 /* ---------- Marcas ---------- */
 .marcas-grid {
   display: grid;
