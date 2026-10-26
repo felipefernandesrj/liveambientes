@@ -31,10 +31,10 @@ if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
 $lojaEmails = [
     'Recreio' => 'recreio@liveambientes.com.br',
-    'Tijuca'  => 'tijuca@liveambientes.com.br',
-    'Niterói' => 'niteroi@liveambientes.com.br',
+    'Tijuca'  => 'gerencia@grupomoveisflexx.com',
+    'Niterói' => 'gerencia@grupomoveisflexx.com',
 ];
-$allEmails = implode(', ', $lojaEmails);
+$allEmails = implode(', ', array_unique($lojaEmails));
 
 switch ($formType) {
     case 'orcamento':
