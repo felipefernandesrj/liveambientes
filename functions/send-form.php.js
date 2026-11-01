@@ -1,5 +1,5 @@
 // Cloudflare Pages Function replicating send-form.php (POST /send-form.php).
-// Env: RESEND_API_KEY, MAIL_FROM, optional TEST_RECIPIENT.
+// Env: RESEND_API_KEY, MAIL_FROM, optional TEST_RECIPIENT, BACKOFFICE_URL, BACKOFFICE_INGEST_TOKEN.
 
 const LOJA_EMAILS = {
   'Recreio': 'recreio@liveambientes.com.br',
@@ -26,7 +26,78 @@ function toBase64(buffer) {
   return btoa(bin);
 }
 
-export async function onRequestPost({ request, env }) {
+const STORE_SLUGS = { recreio: 'recreio', tijuca: 'tijuca', niteroi: 'niteroi' };
+const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+const KNOWN_FIELDS = new Set(['form_type', 'nome', 'telefone', 'email', 'loja', 'mensagem', 'detalhes', 'comodos[]', 'comodos', 'planta', ...UTM_KEYS]);
+
+const normalize = (v) => String(v ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+
+async function sendToBackoffice(env, lead) {
+  if (!env.BACKOFFICE_INGEST_TOKEN) return;
+  try {
+    const base = env.BACKOFFICE_URL || 'https://liveambientes-backoffice.liveambientes.workers.dev';
+    const res = await fetch(`${base}/api/leads/ingest`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.BACKOFFICE_INGEST_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(lead),
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) console.log(`backoffice ingest failed: ${res.status}`);
+  } catch (e) {
+    console.log(`backoffice ingest failed: ${e?.name || 'error'}`);
+  }
+}
+
+function buildLead({ form, request, formType, nome, email, telefone, loja, mensagem, detalhes, comodos }) {
+  const lines = [];
+  if (formType === 'orcamento') {
+    if (comodos.length) lines.push(`Cômodos de interesse: ${comodos.map(cleanHeaderField).join(', ')}`);
+    if (detalhes) lines.push(detalhes);
+  } else if (mensagem) {
+    lines.push(mensagem);
+  }
+  for (const [k, v] of form.entries()) {
+    if (KNOWN_FIELDS.has(k) || typeof v !== 'string' || v.trim() === '') continue;
+    lines.push(`${k}: ${v.trim()}`);
+  }
+
+  const lead = {
+    external_id: `site-${crypto.randomUUID()}`,
+    name: nome,
+    email,
+    phone: telefone,
+    message: lines.join('\n'),
+    source: 'site',
+  };
+  const slug = STORE_SLUGS[normalize(loja)];
+  if (slug) lead.store_slug = slug;
+
+  let ref = null;
+  try {
+    const u = new URL(request.headers.get('Referer') || '');
+    if (u.protocol === 'http:' || u.protocol === 'https:') ref = u;
+  } catch {}
+  if (ref) lead.page_url = ref.href;
+  for (const k of UTM_KEYS) {
+    const v = form.get(k);
+    const val = typeof v === 'string' && v.trim() !== '' ? v.trim() : ref?.searchParams.get(k);
+    if (val) lead[k] = val;
+  }
+
+  const attachments = [];
+  for (const [, v] of form.entries()) {
+    if (v && typeof v !== 'string' && v.size > 0) {
+      attachments.push({ name: (v.name || 'arquivo').split(/[\\/]/).pop(), size: v.size, type: v.type || 'application/octet-stream' });
+    }
+  }
+  if (attachments.length) lead.attachments = attachments;
+  return lead;
+}
+
+export async function onRequestPost({ request, env, waitUntil }) {
   let form;
   try {
     form = await request.formData();
@@ -118,6 +189,15 @@ export async function onRequestPost({ request, env }) {
     ok = res.ok;
   } catch {
     ok = false;
+  }
+
+  if (formType === 'orcamento' || formType === 'contato') {
+    try {
+      const lead = buildLead({ form, request, formType, nome, email, telefone, loja, mensagem, detalhes, comodos });
+      waitUntil(sendToBackoffice(env, lead));
+    } catch (e) {
+      console.log(`backoffice ingest failed: ${e?.name || 'error'}`);
+    }
   }
 
   return json({ ok });
