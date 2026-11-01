@@ -230,3 +230,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// Presença anônima ("visitantes no site agora" no backoffice): id aleatório por aba, só o caminho da página,
+// sinal a cada 30 s com a aba visível. Sem cookies, sem dados pessoais; respeita Do Not Track / GPC.
+(function () {
+  var ENDPOINT = 'https://liveambientes-backoffice.liveambientes.workers.dev/api/presence/beacon';
+  if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl || !navigator.sendBeacon) return;
+  var sid;
+  try { sid = sessionStorage.getItem('la_presence'); } catch (e) {}
+  if (!sid || !/^[a-z0-9]{16,40}$/.test(sid)) {
+    sid = Array.from(crypto.getRandomValues(new Uint8Array(12)), function (b) { return b.toString(36).padStart(2, '0'); }).join('').slice(0, 24);
+    try { sessionStorage.setItem('la_presence', sid); } catch (e) {}
+  }
+  var send = function (leave) {
+    navigator.sendBeacon(ENDPOINT, JSON.stringify({ sid: sid, path: location.pathname, leave: leave === true }));
+  };
+  var beat = function () { if (!document.hidden) send(); };
+  beat();
+  setInterval(beat, 30000);
+  document.addEventListener('visibilitychange', beat);
+  window.addEventListener('pagehide', function () { send(true); });
+})();
