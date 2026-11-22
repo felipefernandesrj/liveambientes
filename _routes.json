@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "include": ["/send-form.php", "/blog", "/blog/*", "/projetistas", "/projetistas/*", "/projetos/*", "/sitemap.xml"],
+  "exclude": ["/projetos/*.html", "/assets/*", "/css/*", "/js/*"]
+}
